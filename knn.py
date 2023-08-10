@@ -10,6 +10,9 @@
 # 0016     unsigned byte   ??               pixel
 # ....     unsigned byte   ??               pixel
 
+# Imports
+import numpy as np
+
 # Define the directories and filenames we will use
 DATA_DIR = 'data/'
 TEST_DATA_FILE = DATA_DIR + 't10k-images.idx3-ubyte'
@@ -64,17 +67,34 @@ def read_labels(file, lab_limit=None):
     return labels
 
 
+def pixel_rearrange(image):
+    return [pixel for row in image for pixel in row]
+
+
+def flatten_images(dataset):
+    return [pixel_rearrange(image) for image in dataset]
+
+
 def main():
     img_train = read_images(TRAIN_DATA_FILE, 100)
     lab_train = read_labels(TRAIN_LABELS_FILE)
     img_test = read_images(TEST_DATA_FILE, 100)
     lab_test = read_labels(TEST_LABELS_FILE)
+
     print(f'Number of train images: {len(img_train)}')
     print(f'Image resolution: {len(img_train[0])}x{len(img_train[0][0])}\n')
     print(f'Number of train labels: {len(lab_train)}\n')
+    print('############\n')
     print(f'Number of test images: {len(img_test)}')
     print(f'Image resolution: {len(img_test[0])}x{len(img_test[0][0])}\n')
     print(f'Number of test labels: {len(lab_test)}\n')
+    print('############\n')
+
+    img_train = flatten_images(img_train)
+    img_test = flatten_images(img_test)
+
+    print(f'Flatten image resolution: {len(img_train[0])}x{len(img_train[0][0])}')
+    print(f'Flatten image resolution: {len(img_test[0])}x{len(img_test[0][0])}')
 
 
 # Allow the application to run as a script but not as a module. Python convention.
