@@ -87,30 +87,36 @@ def get_closest_values(img_train, image):
 
 # AI Algorythm.
 # K its out hyperparameter, which defines which K closest matches we compare our input with.
-def knn_alg(img_train, lab_train, img_test, k=3):
+def knn_alg(img_train, lab_train, img_test, lab_test, k=3):
     label_prediction = []  # Prediction for what the program think each image test is
-    for image in img_test:
+    # for image in img_test:
+    # We enumerate this for passing the input to the printf later and check if we guessed alright
+    for input, image in enumerate(img_test):
         sorted_dist_idx = [
-            pair[0]
+        pair[0]
             for pair in sorted(
                 enumerate(get_closest_values(img_train, image)),
                 key=lambda e: e[1]
             )
         ]
+        # Accept predictions extracted from the train labels, based on the sorted distance up to K
         predictions = [
             lab_train[i]
             for i in sorted_dist_idx[:k]
         ]
+        print(f'Input: {byte_to_int(lab_test[input])} | Guessing... {[byte_to_int(p) for p in predictions]}')
         label_prediction.append(sorted_dist_idx)
     return label_prediction
 
 
 def main():
-    img_train = read_images(TRAIN_DATA_FILE, 100)
+    # Read the images
+    img_train = read_images(TRAIN_DATA_FILE, 6000)
     lab_train = read_labels(TRAIN_LABELS_FILE)
-    img_test = read_images(TEST_DATA_FILE, 100)
+    img_test = read_images(TEST_DATA_FILE, 20)
     lab_test = read_labels(TEST_LABELS_FILE)
 
+    # Informative prints
     print(f'Number of train images: {len(img_train)}')
     print(f'Image resolution: {len(img_train[0])}x{len(img_train[0][0])}\n')
     print(f'Number of train labels: {len(lab_train)}\n')
@@ -118,13 +124,15 @@ def main():
     print(f'Number of test images: {len(img_test)}')
     print(f'Image resolution: {len(img_test[0])}x{len(img_test[0][0])}\n')
     print(f'Number of test labels: {len(lab_test)}\n')
+    print(f'Flatten image resolution: {len(img_train[0])}x{len(img_train[0][0])}')
     print('############\n')
 
+    # Image flattening
     img_train = flatten_images(img_train)
     img_test = flatten_images(img_test)
 
-    print(f'Flatten image resolution: {len(img_train[0])}x{len(img_train[0][0])}')
-    print(f'Flatten image resolution: {len(img_test[0])}x{len(img_test[0][0])}')
+    # Algorythm call. Passing lab_test is not correct, we do it to check accuracy in debugging
+    knn_alg(img_train, lab_train, img_test, lab_test, 7)
 
 
 # Defines the entry point. Python convention.
