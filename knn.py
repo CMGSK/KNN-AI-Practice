@@ -11,7 +11,7 @@
 # ....     unsigned byte   ??               pixel
 
 # Imports
-import numpy as np
+import math
 
 # Define the directories and filenames we will use
 DATA_DIR = 'data/'
@@ -75,6 +75,36 @@ def flatten_images(dataset):
     return [pixel_rearrange(image) for image in dataset]
 
 
+# Get the sum of all pixel difference between the input image and the train image passed by.
+def get_distances(a, b):
+    return math.sqrt(sum([(byte_to_int(a_idx) - byte_to_int(b_idx)) ** 2 for a_idx, b_idx in zip(a, b)]))
+
+
+# Get the array of closest values to the image we're processing comparing to all the train data
+def get_closest_values(img_train, image):
+    return [get_distances(sample, image) for sample in img_train]
+
+
+# AI Algorythm.
+# K its out hyperparameter, which defines which K closest matches we compare our input with.
+def knn_alg(img_train, lab_train, img_test, k=3):
+    label_prediction = []  # Prediction for what the program think each image test is
+    for image in img_test:
+        sorted_dist_idx = [
+            pair[0]
+            for pair in sorted(
+                enumerate(get_closest_values(img_train, image)),
+                key=lambda e: e[1]
+            )
+        ]
+        predictions = [
+            lab_train[i]
+            for i in sorted_dist_idx[:k]
+        ]
+        label_prediction.append(sorted_dist_idx)
+    return label_prediction
+
+
 def main():
     img_train = read_images(TRAIN_DATA_FILE, 100)
     lab_train = read_labels(TRAIN_LABELS_FILE)
@@ -97,6 +127,6 @@ def main():
     print(f'Flatten image resolution: {len(img_test[0])}x{len(img_test[0][0])}')
 
 
-# Allow the application to run as a script but not as a module. Python convention.
+# Defines the entry point. Python convention.
 if __name__ == '__main__':
     main()
